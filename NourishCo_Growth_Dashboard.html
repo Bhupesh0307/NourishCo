@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NourishCo — D2C Growth Analytics Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--surface:#161b22;--card:#1c2230;--border:#2d3348;
+  --accent:#4f8ef7;--green:#3dd68c;--red:#f85149;--amber:#f0a93a;--purple:#a371f7;--teal:#39c5cf;
+  --text:#e6edf3;--muted:#7d8590;--dim:#484f58;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;min-height:100vh}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:stretch;position:sticky;top:0;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:10px;padding:14px 0;margin-right:28px;border-right:1px solid var(--border);padding-right:24px}
+.brand-logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#4f8ef7,#3dd68c);display:grid;place-items:center;font-size:15px}
+.brand-text .name{font-size:14px;font-weight:700;letter-spacing:.2px}
+.brand-text .sub{font-size:10px;color:var(--muted)}
+.nav-tabs{display:flex;gap:2px;align-items:center;padding:0 4px}
+.nav-tab{padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted);transition:.15s;border:none;background:none;white-space:nowrap}
+.nav-tab:hover{color:var(--text);background:#ffffff0a}
+.nav-tab.active{color:var(--accent);background:#4f8ef715}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding:14px 0}
+.badge{background:var(--card);border:1px solid var(--border);padding:4px 12px;border-radius:20px;font-size:10px;color:var(--muted)}
+
+/* PAGE */
+.page{display:none;padding:24px 28px;max-width:1400px;margin:0 auto}
+.page.active{display:block}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;gap:12px;margin-bottom:20px}
+.kpi-strip-6{grid-template-columns:repeat(6,1fr)}
+.kpi-strip-5{grid-template-columns:repeat(5,1fr)}
+.kpi-strip-4{grid-template-columns:repeat(4,1fr)}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.blue::before{background:var(--accent)}
+.kpi.green::before{background:var(--green)}
+.kpi.red::before{background:var(--red)}
+.kpi.amber::before{background:var(--amber)}
+.kpi.purple::before{background:var(--purple)}
+.kpi.teal::before{background:var(--teal)}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.kpi-val{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:5px}
+.kpi-delta{font-size:10px;font-weight:600;margin-top:4px}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--amber)}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.g13{display:grid;grid-template-columns:1fr 3fr;gap:16px;margin-bottom:16px}
+.g31{display:grid;grid-template-columns:3fr 1fr;gap:16px;margin-bottom:16px}
+.mb16{margin-bottom:16px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-size:12px;font-weight:600;margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:16px}
+.ch{height:240px;position:relative}
+.ch-sm{height:190px;position:relative}
+.ch-lg{height:300px;position:relative}
+.ch-xl{height:360px;position:relative}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{padding:9px 12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px;font-weight:500;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid #1c2230}
+tr:last-child td{border:none}
+tr:hover td{background:#ffffff04}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.pill-g{background:#3dd68c20;color:#3dd68c}
+.pill-r{background:#f8514920;color:#f85149}
+.pill-a{background:#f0a93a20;color:#f0a93a}
+.pill-b{background:#4f8ef720;color:#4f8ef7}
+
+/* FUNNEL */
+.funnel{padding:6px 0}
+.f-row{margin-bottom:12px}
+.f-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.f-name{font-size:11px;font-weight:600}
+.f-right{display:flex;gap:12px;font-size:11px;color:var(--muted)}
+.f-count{color:var(--text);font-weight:500}
+.f-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden}
+.f-fill{height:100%;border-radius:5px;transition:width .6s ease}
+.f-drop{font-size:10px;color:var(--red);text-align:right;margin-top:3px}
+
+/* INSIGHT */
+.insight-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.ins{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.ins.crit{border-color:#f8514930}
+.ins.warn{border-color:#f0a93a30}
+.ins.good{border-color:#3dd68c30}
+.ins-icon{font-size:20px;margin-bottom:8px}
+.ins-title{font-size:11px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.ins-body{font-size:11px;color:var(--muted);line-height:1.6}
+.ins-action{font-size:11px;color:var(--accent);margin-top:8px;font-weight:500}
+
+/* OPT */
+.opt{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.opt-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.opt-num{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff}
+.opt-title{font-size:13px;font-weight:600;line-height:1.4;flex:1}
+.opt-body{font-size:12px;color:var(--muted);line-height:1.65;margin-left:40px}
+.opt-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-left:40px}
+.chip{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:11px}
+.chip span{color:var(--muted)}
+
+/* IMPACT */
+.impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.impact-cell{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.impact-val{font-size:24px;font-weight:700;margin-bottom:4px}
+.impact-label{font-size:11px;color:var(--muted)}
+.impact-sub{font-size:10px;color:var(--dim);margin-top:2px}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin-bottom:10px}
+
+/* SCATTER LEGEND */
+.sc-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.sc-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.sc-dot{width:10px;height:10px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="brand-logo">🥤</div>
+    <div class="brand-text">
+      <div class="name">NourishCo Analytics</div>
+      <div class="sub">D2C Growth Intelligence</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="go('overview',this)">Overview</button>
+    <button class="nav-tab" onclick="go('funnel',this)">Funnel</button>
+    <button class="nav-tab" onclick="go('channels',this)">Channels</button>
+    <button class="nav-tab" onclick="go('trends',this)">Trends</button>
+    <button class="nav-tab" onclick="go('optimization',this)">Optimization</button>
+  </div>
+  <div class="nav-right">
+    <div class="badge">📅 Jan – Dec 2024</div>
+    <div class="badge">🥤 Food &amp; Beverage D2C</div>
+  </div>
+</nav>
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<div class="page active" id="p-overview">
+
+  <div class="kpi-strip kpi-strip-6">
+    <div class="kpi green">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-val" style="color:var(--green)">₹1.82Cr</div>
+      <div class="kpi-sub">FY 2024 full year</div>
+      <div class="kpi-delta up">↑ Q3 peak at ₹4.6L/mo</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Total Ad Spend</div>
+      <div class="kpi-val">₹48.6L</div>
+      <div class="kpi-sub">Across 6 channels</div>
+      <div class="kpi-delta neutral">45% on underperforming channels</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Blended ROAS</div>
+      <div class="kpi-val" style="color:var(--green)">3.74×</div>
+      <div class="kpi-sub">Revenue per ₹1 spent</div>
+      <div class="kpi-delta up">↑ Best: Email at 19.89×</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-label">Blended CAC</div>
+      <div class="kpi-val" style="color:var(--amber)">₹167</div>
+      <div class="kpi-sub">Cost per acquisition</div>
+      <div class="kpi-delta down">↓ Can reach ₹142 with realloc</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Overall CTR</div>
+      <div class="kpi-val">4.36%</div>
+      <div class="kpi-sub">10.2M impressions</div>
+      <div class="kpi-delta down">↓ Display at 0.64% drags avg</div>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">Overall CVR</div>
+      <div class="kpi-val">6.56%</div>
+      <div class="kpi-sub">29,093 conversions</div>
+      <div class="kpi-delta up">↑ Email leads at 6.81%</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Revenue vs Ad Spend — Monthly</div>
+      <div class="card-sub">Revenue consistently outpaces spend; Q4 festive season drives peak</div>
+      <div class="ch"><canvas id="c-revspend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quarterly Performance</div>
+      <div class="card-sub">Q3 delivers best ROAS (4.22×); Q4 highest revenue (₹50.9L)</div>
+      <div class="ch"><canvas id="c-qtr"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">ROAS by Channel</div>
+      <div class="card-sub">Email 5× better than blended average</div>
+      <div class="ch-sm"><canvas id="c-roas-ch"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Spend Distribution</div>
+      <div class="card-sub">Google Search eats 45% of budget, worst ROAS</div>
+      <div class="ch-sm"><canvas id="c-spend-pie"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue Distribution</div>
+      <div class="card-sub">Email generates 45% revenue on just 9% of spend</div>
+      <div class="ch-sm"><canvas id="c-rev-pie"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ FUNNEL ═══════════ -->
+<div class="page" id="p-funnel">
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Full Acquisition Funnel — Drop-off Analysis</div>
+      <div class="card-sub">10.2M impressions → 29K purchases. Every stage has significant leakage.</div>
+      <div class="funnel" id="funnel-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stage Volume Comparison</div>
+      <div class="card-sub">Logarithmic scale — reveals relative size of each drop</div>
+      <div class="ch"><canvas id="c-funnel-bar"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="card-title">Funnel Drop-off Detail Table</div>
+    <div class="card-sub">Severity rating based on conversion loss at each stage</div>
+    <div class="tbl-wrap">
+      <table id="t-funnel"></table>
+    </div>
+  </div>
+
+  <div class="insight-row">
+    <div class="ins crit">
+      <div class="ins-icon">🚨</div>
+      <div class="ins-title">Drop #1 — Impressions → Clicks (95.6%)</div>
+      <div class="ins-body">9.7M users see NourishCo ads but don't click. Google Search CTR is 4.77% (good) but YouTube is 1.53% and Display is 0.64% — pulling the average down. Creatives are not resonating on visual channels.</div>
+      <div class="ins-action">→ A/B test creative hooks · refresh every 4 weeks · pause low-CTR ad sets</div>
+    </div>
+    <div class="ins crit">
+      <div class="ins-icon">🛒</div>
+      <div class="ins-title">Drop #2 — PDP → Add to Cart (67.8%)</div>
+      <div class="ins-body">178K users visit product pages but leave without adding to cart. This is the single largest revenue leakage. For an F&B brand, lack of nutritional transparency, weak packaging imagery, and no subscription nudge are common culprits.</div>
+      <div class="ins-action">→ Add nutrition facts · bundle discounts · "Subscribe & Save" CTA · urgency badges</div>
+    </div>
+    <div class="ins warn">
+      <div class="ins-icon">💳</div>
+      <div class="ins-title">Drop #3 — Add to Cart → Checkout (44%)</div>
+      <div class="ins-body">37K users abandon cart before checkout. D2C F&B brands lose heavily here due to delivery date uncertainty, hidden costs, or lack of COD. WhatsApp retargeting is critical for this segment.</div>
+      <div class="ins-action">→ Show delivery ETA · add COD · WhatsApp cart recovery within 1 hour</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ CHANNELS ═══════════ -->
+<div class="page" id="p-channels">
+
+  <div class="kpi-strip kpi-strip-6" style="grid-template-columns:repeat(6,1fr)">
+    <div class="kpi teal" style="border-top:2px solid var(--teal)">
+      <div class="kpi-label">📧 Email/WhatsApp</div>
+      <div class="kpi-val" style="color:var(--green);font-size:16px">₹30 CAC</div>
+      <div class="kpi-sub">ROAS 19.89× · Best channel</div>
+    </div>
+    <div class="kpi green" style="border-top:2px solid var(--green)">
+      <div class="kpi-label">🖥 Google Display</div>
+      <div class="kpi-val" style="color:var(--green);font-size:16px">₹98 CAC</div>
+      <div class="kpi-sub">ROAS 5.94× · Efficient</div>
+    </div>
+    <div class="kpi blue" style="border-top:2px solid var(--accent)">
+      <div class="kpi-label">▶ YouTube Ads</div>
+      <div class="kpi-val" style="color:var(--amber);font-size:16px">₹170 CAC</div>
+      <div class="kpi-sub">ROAS 3.78× · Mid-tier</div>
+    </div>
+    <div class="kpi amber" style="border-top:2px solid var(--amber)">
+      <div class="kpi-label">📱 Meta Ads</div>
+      <div class="kpi-val" style="color:var(--amber);font-size:16px">₹229 CAC</div>
+      <div class="kpi-sub">ROAS 2.82× · High vol</div>
+    </div>
+    <div class="kpi red" style="border-top:2px solid var(--red)">
+      <div class="kpi-label">👤 Influencer</div>
+      <div class="kpi-val" style="color:var(--red);font-size:16px">₹278 CAC</div>
+      <div class="kpi-sub">ROAS 2.55× · Poor ROI</div>
+    </div>
+    <div class="kpi red" style="border-top:2px solid #c44">
+      <div class="kpi-label">🔍 Google Search</div>
+      <div class="kpi-val" style="color:var(--red);font-size:16px">₹486 CAC</div>
+      <div class="kpi-sub">ROAS 1.58× · Worst</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">CAC vs ROAS — Channel Scatter</div>
+      <div class="card-sub">Ideal: bottom-left = low CAC. Top = high ROAS. Email dominates both axes.</div>
+      <div class="ch"><canvas id="c-scatter"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CTR by Channel</div>
+      <div class="card-sub">Email CTR is 20× higher than Google Display — massive creative quality gap</div>
+      <div class="ch"><canvas id="c-ctr-ch"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="card-title">Channel Performance Summary (Ranked by ROAS)</div>
+    <div class="card-sub">Full-year aggregated metrics — color coded by efficiency</div>
+    <div class="tbl-wrap">
+      <table id="t-channel"></table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ TRENDS ═══════════ -->
+<div class="page" id="p-trends">
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Blended CAC — Monthly</div>
+      <div class="card-sub">Best: Jun–Jul (₹138–139). Worst: Jan–Feb (₹174–197). Festive season spikes again.</div>
+      <div class="ch"><canvas id="c-cac-t"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Blended ROAS — Monthly</div>
+      <div class="card-sub">Jun–Jul peak ROAS (4.37–4.43×). Q4 dip despite high revenue — spend outpaced efficiency.</div>
+      <div class="ch"><canvas id="c-roas-t"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">CTR Trend — Monthly</div>
+      <div class="card-sub">Stable 4.1–4.9% range. Slight softening in Q4 as festive spend scales up.</div>
+      <div class="ch"><canvas id="c-ctr-t"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CVR Trend — Monthly</div>
+      <div class="card-sub">Jun–Jul–Dec best CVR (7.2–7.6%). Seasonal demand spikes match conversion peaks.</div>
+      <div class="ch"><canvas id="c-cvr-t"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="card-title">Monthly Revenue, Conversions &amp; Profit</div>
+    <div class="card-sub">Dec highest revenue (₹18.1L) · Jun highest ROAS (4.37×) · Q3 most efficient overall</div>
+    <div class="ch-xl"><canvas id="c-combo"></canvas></div>
+  </div>
+
+</div>
+
+<!-- ═══════════ OPTIMIZATION ═══════════ -->
+<div class="page" id="p-optimization">
+
+  <div class="slabel">3 Identified Funnel Drop-offs &amp; Optimization Strategy</div>
+
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-num" style="background:var(--red)">1</div>
+      <div>
+        <div class="opt-title">Fix Ad Creatives — Impressions → Click Drop (95.6%)</div>
+        <span class="pill pill-r">🚨 Critical</span>
+      </div>
+    </div>
+    <div class="opt-body">
+      Out of <strong>10.2M impressions</strong>, only <strong>443K users click</strong>. YouTube CTR is 1.53% and Google Display is 0.64% — far below benchmark. For an F&B brand, visual channels need appetite-appeal creatives: product-in-use shots, before/after energy levels, short-form video showing product consumption.<br><br>
+      A conservative 1 percentage point improvement in blended CTR (4.36% → 5.36%) adds ~102,000 additional clicks with zero additional spend — at current CVR, that's ~6,700 extra conversions worth ₹46L revenue.
+    </div>
+    <div class="opt-chips">
+      <div class="chip">Current CTR <span>4.36%</span></div>
+      <div class="chip">Target CTR <span style="color:var(--green)">5.4%+</span></div>
+      <div class="chip">Extra Clicks <span style="color:var(--green)">+102K</span></div>
+      <div class="chip">Extra Conversions <span style="color:var(--green)">~+6,700</span></div>
+      <div class="chip">Revenue Impact <span style="color:var(--green)">+₹46L est.</span></div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-num" style="background:var(--amber)">2</div>
+      <div>
+        <div class="opt-title">PDP Optimisation — Add-to-Cart Drop (67.8%)</div>
+        <span class="pill pill-a">⚠ High Priority</span>
+      </div>
+    </div>
+    <div class="opt-body">
+      <strong>178,900 users</strong> visit product pages and leave without adding to cart — the single largest revenue leakage point. For NourishCo (F&B), key conversion blockers are typically: lack of nutritional transparency, no subscription offer, weak social proof, and unclear health benefit claims.<br><br>
+      Reducing this drop by 10 percentage points (67.8% → 57.8%) would add ~26,800 additional add-to-carts. At current checkout-to-conversion rate (~61%), that converts to ~16,300 extra orders — worth ₹96L at average ₹590 AOV.
+    </div>
+    <div class="opt-chips">
+      <div class="chip">Current ATC Rate <span>32.2%</span></div>
+      <div class="chip">Target ATC Rate <span style="color:var(--green)">42%</span></div>
+      <div class="chip">Extra ATC <span style="color:var(--green)">+26.8K</span></div>
+      <div class="chip">Extra Orders <span style="color:var(--green)">~+16.3K</span></div>
+      <div class="chip">Revenue Impact <span style="color:var(--green)">+₹96L est.</span></div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-num" style="background:var(--purple)">3</div>
+      <div>
+        <div class="opt-title">Budget Reallocation — Reduce Blended CAC by ~15%</div>
+        <span class="pill pill-b">💡 Strategic</span>
+      </div>
+    </div>
+    <div class="opt-body">
+      Google Search (₹21.9L spend, 1.58× ROAS, ₹486 CAC) and Influencer (₹11.9L, 2.55× ROAS) together consume <strong>69% of budget</strong> while delivering below-average returns. Email/WhatsApp (₹4.2L spend, 19.89× ROAS, ₹30 CAC) is drastically underinvested.<br><br>
+      Proposed reallocation: Cut Google Search broad match by ₹6.6L → invest ₹4L into Email list growth &amp; automation sequences + ₹2.6L into Google Display (proven 5.94× ROAS). This shifts budget toward NourishCo's two most efficient channels and projects blended CAC from ₹167 → <strong>~₹142 (−15%)</strong>.
+    </div>
+    <div class="opt-chips">
+      <div class="chip">Current CAC <span>₹167</span></div>
+      <div class="chip">Projected CAC <span style="color:var(--green)">~₹142</span></div>
+      <div class="chip">CAC Reduction <span style="color:var(--green)">~15%</span></div>
+      <div class="chip">Budget Shift <span>₹6.6L</span></div>
+      <div class="chip">Channels Benefiting <span>Email · Display</span></div>
+    </div>
+  </div>
+
+  <!-- COMBINED IMPACT -->
+  <div class="card">
+    <div class="card-title">Combined Projected Impact — All 3 Optimizations</div>
+    <div class="card-sub">If implemented over next 2 quarters (6 months)</div>
+    <div class="impact-grid">
+      <div class="impact-cell">
+        <div class="impact-val" style="color:var(--green)">−15%</div>
+        <div class="impact-label">CAC Reduction</div>
+        <div class="impact-sub">₹167 → ₹142</div>
+      </div>
+      <div class="impact-cell">
+        <div class="impact-val" style="color:var(--green)">+24%</div>
+        <div class="impact-label">CTR Improvement</div>
+        <div class="impact-sub">4.36% → 5.4%</div>
+      </div>
+      <div class="impact-cell">
+        <div class="impact-val" style="color:var(--green)">+31%</div>
+        <div class="impact-label">Add-to-Cart Rate</div>
+        <div class="impact-sub">32.2% → 42%</div>
+      </div>
+      <div class="impact-cell">
+        <div class="impact-val" style="color:var(--amber)">4.8×</div>
+        <div class="impact-label">Projected ROAS</div>
+        <div class="impact-sub">Up from 3.74×</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="card-sub" style="margin-bottom:8px">Budget reallocation — Before vs After</div>
+      <div class="ch-sm" style="max-width:600px"><canvas id="c-realloc"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══ COLOUR PALETTE ════════════════════════════════════════════════
+const C = ["#39c5cf","#3dd68c","#4f8ef7","#f0a93a","#a371f7","#f85149"];
+const GRID = "#2d3348"; const MUTED = "#7d8590";
+const base = (yL="") => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:MUTED,font:{size:10},boxWidth:11}}},
+  scales:{
+    x:{grid:{color:GRID},ticks:{color:MUTED,font:{size:10}}},
+    y:{grid:{color:GRID},ticks:{color:MUTED,font:{size:10}},
+      title:{display:!!yL,text:yL,color:MUTED,font:{size:10}}}
+  }
+});
+
+// ══ DATA ══════════════════════════════════════════════════════════
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const spend  = [337108,357879,350117,368432,514195,395862,411333,309568,368141,451833,482909,509728];
+const rev    = [1215115,1150221,1274852,1405364,1699638,1728758,1823942,1265734,1510970,1503335,1780439,1808094];
+const profit = rev.map((r,i)=>Math.round(r*0.38));
+const conv   = [1935,1821,1954,2113,2815,2869,2962,1968,2467,2415,2831,2943];
+const cac    = [174.22,196.53,179.18,174.36,182.66,137.98,138.87,157.3,149.23,187.09,170.58,173.2];
+const roas   = [3.6,3.21,3.64,3.81,3.31,4.37,4.43,4.09,4.1,3.33,3.69,3.55];
+const ctr    = [4.59,4.33,4.32,4.72,4.89,4.32,4.44,4.19,4.59,4.11,4.08,3.91];
+const cvr    = [5.88,6,6.48,5.64,6.14,7.21,7.63,6.5,6.98,6.13,6.52,7.44];
+
+const channels = {
+  names:  ["Email/WA","G.Display","YouTube","Meta","Influencer","G.Search"],
+  cac:    [29.77,97.7,170.36,228.75,277.77,486.03],
+  roas:   [19.89,5.94,3.78,2.82,2.55,1.58],
+  ctr:    [12.63,0.64,1.53,3.00,4.06,4.77],
+  cvr:    [6.81,6.43,6.12,6.41,6.48,6.16],
+  spend:  [419075,69878,268863,724258,1188686,2186345],
+  rev:    [8214026,415082,1018989,2028077,2987001,3503287],
+};
+
+const funnel = [
+  {s:"Impressions",n:10164341},
+  {s:"Clicks",     n:443313},
+  {s:"PDP Views",  n:264002},
+  {s:"Add to Cart",n:85102},
+  {s:"Checkouts",  n:47685},
+  {s:"Conversions",n:29093},
+];
+
+// ══ OVERVIEW ══════════════════════════════════════════════════════
+
+// Revenue vs Spend
+new Chart(document.getElementById("c-revspend"),{
+  type:"bar",
+  data:{labels:months,datasets:[
+    {label:"Revenue",data:rev,backgroundColor:"#3dd68c33",borderColor:"#3dd68c",borderWidth:1.5,borderRadius:3},
+    {label:"Ad Spend",data:spend,backgroundColor:"#f8514933",borderColor:"#f85149",borderWidth:1.5,borderRadius:3},
+  ]},
+  options:{...base("₹ INR")}
+});
+
+// Quarterly
+new Chart(document.getElementById("c-qtr"),{
+  type:"bar",
+  data:{
+    labels:["Q1 2024","Q2 2024","Q3 2024","Q4 2024"],
+    datasets:[
+      {label:"Revenue",data:[3640188,4833760,4600646,5091868],backgroundColor:"#3dd68c66",borderColor:"#3dd68c",borderWidth:1.5,borderRadius:4},
+      {label:"Ad Spend",data:[1045104,1278489,1089042,1444470],backgroundColor:"#f8514966",borderColor:"#f85149",borderWidth:1.5,borderRadius:4},
+    ]
+  },
+  options:{...base("₹ INR")}
+});
+
+// ROAS by channel
+new Chart(document.getElementById("c-roas-ch"),{
+  type:"bar",
+  data:{labels:channels.names,datasets:[{label:"ROAS",data:channels.roas,backgroundColor:C.map(c=>c+"99"),borderColor:C,borderWidth:1.5,borderRadius:4}]},
+  options:{...base("ROAS ×"),plugins:{legend:{display:false}}}
+});
+
+// Spend pie
+new Chart(document.getElementById("c-spend-pie"),{
+  type:"doughnut",
+  data:{labels:channels.names,datasets:[{data:channels.spend,backgroundColor:C.map(c=>c+"bb"),borderColor:C,borderWidth:1.5}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{color:MUTED,font:{size:9},boxWidth:10}}}}
+});
+
+// Revenue pie
+new Chart(document.getElementById("c-rev-pie"),{
+  type:"doughnut",
+  data:{labels:channels.names,datasets:[{data:channels.rev,backgroundColor:C.map(c=>c+"bb"),borderColor:C,borderWidth:1.5}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{color:MUTED,font:{size:9},boxWidth:10}}}}
+});
+
+// ══ FUNNEL ════════════════════════════════════════════════════════
+const fColors=["#4f8ef7","#39c5cf","#3dd68c","#f0a93a","#a371f7","#f85149"];
+
+// HTML funnel bars
+(function(){
+  const max=funnel[0].n;
+  let h="";
+  funnel.forEach((f,i)=>{
+    const w=(f.n/max*100).toFixed(1);
+    let drop="";
+    if(i>0){const d=((1-f.n/funnel[i-1].n)*100).toFixed(1);drop=`<div class="f-drop">▼ ${d}% drop — ${(funnel[i-1].n-f.n).toLocaleString()} users lost</div>`;}
+    h+=`<div class="f-row">
+      <div class="f-top"><span class="f-name">${f.s}</span><div class="f-right"><span class="f-count">${f.n.toLocaleString()}</span><span>${w}% of top</span></div></div>
+      <div class="f-bar"><div class="f-fill" style="width:${w}%;background:${fColors[i]}"></div></div>
+      ${drop}</div>`;
+  });
+  document.getElementById("funnel-bars").innerHTML=h;
+})();
+
+// Funnel bar chart
+new Chart(document.getElementById("c-funnel-bar"),{
+  type:"bar",
+  data:{labels:funnel.map(f=>f.s),datasets:[{label:"Users",data:funnel.map(f=>f.n),backgroundColor:fColors.map(c=>c+"99"),borderColor:fColors,borderWidth:1.5,borderRadius:4}]},
+  options:{...base("Users (log)"),indexAxis:"y",scales:{...base().scales,x:{...base().scales.x,type:"logarithmic"}},plugins:{legend:{display:false}}}
+});
+
+// Funnel table
+(function(){
+  let h=`<tr><th>Stage</th><th>Users</th><th>% of Top</th><th>Drop from Prev</th><th>Users Lost</th><th>Severity</th></tr>`;
+  funnel.forEach((f,i)=>{
+    let dr="—",lost="—",sev=`<span class="pill pill-b">Baseline</span>`;
+    if(i>0){
+      const d=((1-f.n/funnel[i-1].n)*100).toFixed(1);
+      const l=(funnel[i-1].n-f.n).toLocaleString();
+      dr=d+"%"; lost=l;
+      sev=d>80?`<span class="pill pill-r">Critical</span>`:d>50?`<span class="pill pill-r">High</span>`:d>30?`<span class="pill pill-a">Medium</span>`:`<span class="pill pill-g">Low</span>`;
+    }
+    h+=`<tr><td><strong>${f.s}</strong></td><td>${f.n.toLocaleString()}</td><td>${(f.n/funnel[0].n*100).toFixed(2)}%</td><td>${dr}</td><td>${lost}</td><td>${sev}</td></tr>`;
+  });
+  document.getElementById("t-funnel").innerHTML=h;
+})();
+
+// ══ CHANNELS ══════════════════════════════════════════════════════
+
+// Scatter CAC vs ROAS
+new Chart(document.getElementById("c-scatter"),{
+  type:"scatter",
+  data:{datasets:channels.names.map((n,i)=>({
+    label:n,
+    data:[{x:channels.cac[i],y:channels.roas[i]}],
+    backgroundColor:C[i]+"cc",borderColor:C[i],pointRadius:11,pointHoverRadius:14,
+  }))},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:MUTED,font:{size:10},boxWidth:11}}},
+    scales:{
+      x:{grid:{color:GRID},ticks:{color:MUTED},title:{display:true,text:"CAC ₹ (Lower = Better)",color:MUTED,font:{size:10}}},
+      y:{grid:{color:GRID},ticks:{color:MUTED},title:{display:true,text:"ROAS × (Higher = Better)",color:MUTED,font:{size:10}}},
+    }
+  }
+});
+
+// CTR channel
+new Chart(document.getElementById("c-ctr-ch"),{
+  type:"bar",
+  data:{labels:channels.names,datasets:[{label:"CTR %",data:channels.ctr,backgroundColor:C.map(c=>c+"99"),borderColor:C,borderWidth:1.5,borderRadius:4}]},
+  options:{...base("CTR %"),plugins:{legend:{display:false}}}
+});
+
+// Channel table
+(function(){
+  const order=[...channels.names.keys()].sort((a,b)=>channels.roas[b]-channels.roas[a]);
+  let h=`<tr><th>#</th><th>Channel</th><th>ROAS</th><th>CAC (₹)</th><th>CTR %</th><th>CVR %</th><th>Total Spend</th><th>Total Revenue</th><th>Rating</th></tr>`;
+  order.forEach((i,rank)=>{
+    const r=channels.roas[i];
+    const rating=r>10?`<span class="pill pill-g">Excellent</span>`:r>4?`<span class="pill pill-g">Good</span>`:r>3?`<span class="pill pill-a">Average</span>`:`<span class="pill pill-r">Poor</span>`;
+    const spL=(channels.spend[i]/1e5).toFixed(1)+"L";
+    const rvL=(channels.rev[i]/1e5).toFixed(1)+"L";
+    h+=`<tr><td style="color:var(--muted)">${rank+1}</td><td><strong>${channels.names[i]}</strong></td><td style="color:${r>4?'#3dd68c':r>2.8?'#f0a93a':'#f85149'}">${r}×</td><td>₹${channels.cac[i]}</td><td>${channels.ctr[i]}%</td><td>${channels.cvr[i]}%</td><td>₹${spL}</td><td>₹${rvL}</td><td>${rating}</td></tr>`;
+  });
+  document.getElementById("t-channel").innerHTML=h;
+})();
+
+// ══ TRENDS ════════════════════════════════════════════════════════
+function line(id,data,label,color,yL){
+  new Chart(document.getElementById(id),{
+    type:"line",
+    data:{labels:months,datasets:[{label,data,borderColor:color,backgroundColor:color+"22",fill:true,tension:.38,pointRadius:3,pointHoverRadius:6,borderWidth:2}]},
+    options:{...base(yL),plugins:{legend:{display:false}}}
+  });
+}
+line("c-cac-t",  cac, "CAC ₹",  "#f0a93a","₹");
+line("c-roas-t", roas,"ROAS ×", "#3dd68c","× ROAS");
+line("c-ctr-t",  ctr, "CTR %",  "#a371f7","% CTR");
+line("c-cvr-t",  cvr, "CVR %",  "#39c5cf","% CVR");
+
+// Combo chart
+new Chart(document.getElementById("c-combo"),{
+  type:"bar",
+  data:{labels:months,datasets:[
+    {label:"Revenue",data:rev,backgroundColor:"#3dd68c33",borderColor:"#3dd68c",borderWidth:1.5,borderRadius:3,yAxisID:"y"},
+    {label:"Profit", data:profit,backgroundColor:"#4f8ef733",borderColor:"#4f8ef7",borderWidth:1.5,borderRadius:3,yAxisID:"y"},
+    {type:"line",label:"Conversions",data:conv,borderColor:"#f0a93a",backgroundColor:"transparent",fill:false,tension:.38,pointRadius:3,borderWidth:2,yAxisID:"y1"},
+  ]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:MUTED,font:{size:10},boxWidth:11}}},
+    scales:{
+      x:{grid:{color:GRID},ticks:{color:MUTED,font:{size:10}}},
+      y:{grid:{color:GRID},ticks:{color:MUTED,font:{size:10}},title:{display:true,text:"₹ Revenue / Profit",color:MUTED,font:{size:10}}},
+      y1:{position:"right",grid:{display:false},ticks:{color:"#f0a93a",font:{size:10}},title:{display:true,text:"Conversions",color:"#f0a93a",font:{size:10}}},
+    }
+  }
+});
+
+// ══ OPTIMIZATION ══════════════════════════════════════════════════
+new Chart(document.getElementById("c-realloc"),{
+  type:"bar",
+  data:{
+    labels:channels.names,
+    datasets:[
+      {label:"Current Spend",data:channels.spend,backgroundColor:"#f8514944",borderColor:"#f85149",borderWidth:1.5,borderRadius:3},
+      {label:"Proposed Spend",data:[719075,329878,268863,624258,788686,1126345],backgroundColor:"#3dd68c44",borderColor:"#3dd68c",borderWidth:1.5,borderRadius:3},
+    ]
+  },
+  options:{...base("₹ Spend")}
+});
+
+// ══ TABS ══════════════════════════════════════════════════════════
+function go(id,el){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("p-"+id).classList.add("active");
+  el.classList.add("active");
+}
+</script>
+</body>
+</html>
