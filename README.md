@@ -18,13 +18,18 @@ The goal was to answer three core growth questions:
 
 ## 🖥 Dashboard Preview
 
-| Overview | Funnel Analysis |
-|---|---|
-| ![](assets/overview.png) | ![](assets/funnel.png) |
+![Overview](Overview.png)
 
-| Channel Performance | Optimization |
-|---|---|
-| ![](assets/channels.png) | ![](assets/optimization.png) |
+<table>
+  <tr>
+    <td><img src="Funnel.png" alt="Funnel Analysis"/></td>
+    <td><img src="Channels.png" alt="Channel Performance"/></td>
+  </tr>
+  <tr>
+    <td><img src="Trends.png" alt="Monthly Trends"/></td>
+    <td><img src="Optimization.png" alt="Optimization Insights"/></td>
+  </tr>
+</table>
 
 ---
 
