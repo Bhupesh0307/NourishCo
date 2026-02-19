@@ -142,7 +142,12 @@ NourishCo_D2C_PowerBI_Dataset.xlsx
 | `README.md` | This file |
 
 ---
+## 📊 Dashboard Preview
 
+![Overview](overview.png)
+![Funnel Analysis](funnel.png)
+![Channel Performance](channels.png)
+---
 ## 👤 Author
 
 **Bhupesh Jha** — Growth & Product Analyst  
