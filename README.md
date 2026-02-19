@@ -16,6 +16,18 @@ The goal was to answer three core growth questions:
 
 ---
 
+## 🖥 Dashboard Preview
+
+| Overview | Funnel Analysis |
+|---|---|
+| ![](assets/overview.png) | ![](assets/funnel.png) |
+
+| Channel Performance | Optimization |
+|---|---|
+| ![](assets/channels.png) | ![](assets/optimization.png) |
+
+---
+
 ## 📊 Key Results (FY 2024)
 
 | Metric | Value |
@@ -141,17 +153,6 @@ NourishCo_D2C_PowerBI_Dataset.xlsx
 | `generate_data.py` | Python script — full data generation & analysis pipeline |
 | `README.md` | This file |
 
----
-
-## 🖥 Dashboard Preview
-
-| Overview | Funnel Analysis |
-|---|---|
-| ![](assets/overview.png) | ![](assets/funnel.png) |
-
-| Channel Performance | Optimization |
-|---|---|
-| ![](assets/channels.png) | ![](assets/optimization.png) |
 
 ---
 
